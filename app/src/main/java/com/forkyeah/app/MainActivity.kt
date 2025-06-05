@@ -102,10 +102,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNewSearchButton() {
         binding.newSearchButton.setOnClickListener {
-            binding.newSearchButton.visibility = View.GONE
-            binding.recipeUrl.visibility = View.GONE
-            binding.persistentHeart.alpha = 0f
             viewModel.loadNewSearch()
+            isItemLiked = false
+            binding.newSearchButton.visibility = View.GONE
+            binding.persistentHeart.alpha = 0f
+            binding.persistentHeart.visibility = View.GONE
+            binding.heartOverlay.visibility = View.GONE
+            binding.recipeUrl.visibility = View.GONE
+            // Move to next item when starting new search
+            currentIndex++
+            if (currentIndex >= foodList.size) {
+                currentIndex = 0
+            }
+            showFoodCard(foodList[currentIndex])
+            showTooltip("Swipe right to like, left to skip")
         }
     }
 
@@ -206,61 +216,34 @@ class MainActivity : AppCompatActivity() {
         val currentItem = viewModel.getCurrentItem()
         
         if (currentItem != null) {
-            // Reset heart states
+            // Show heart animation
             binding.heartOverlay.visibility = View.VISIBLE
             binding.heartOverlay.alpha = 0f
-            binding.heartOverlay.scaleX = 0.5f
-            binding.heartOverlay.scaleY = 0.5f
-            
-            binding.persistentHeart.alpha = 0f
-            binding.persistentHeart.scaleX = 0.5f
-            binding.persistentHeart.scaleY = 0.5f
-
-            // Animate the overlay heart
             binding.heartOverlay.animate()
                 .alpha(1f)
-                .scaleX(1.2f)
-                .scaleY(1.2f)
                 .setDuration(300)
                 .withEndAction {
-                    // Fade out the overlay heart
                     binding.heartOverlay.animate()
                         .alpha(0f)
-                        .scaleX(1f)
-                        .scaleY(1f)
                         .setDuration(300)
                         .withEndAction {
                             binding.heartOverlay.visibility = View.GONE
+                            // Show persistent heart and recipe URL after animation
+                            binding.persistentHeart.alpha = 1f
+                            binding.newSearchButton.visibility = View.VISIBLE
                             
-                            // Show persistent heart with a bounce effect
-                            binding.persistentHeart.animate()
-                                .alpha(1f)
-                                .scaleX(1.2f)
-                                .scaleY(1.2f)
-                                .setDuration(200)
-                                .withEndAction {
-                                    binding.persistentHeart.animate()
-                                        .scaleX(1f)
-                                        .scaleY(1f)
-                                        .setDuration(100)
-                                        .withEndAction {
-                                            // Show recipe URL and new search button
-                                            binding.newSearchButton.visibility = View.VISIBLE
-                                            binding.recipeUrl.apply {
-                                                text = "View Recipe"
-                                                visibility = View.VISIBLE
-                                                setOnClickListener {
-                                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentItem.recipeUrl))
-                                                    startActivity(intent)
-                                                }
-                                            }
-                                            
-                                            // Shuffle the list after all animations complete
-                                            viewModel.shuffleCurrentList(currentIndex)
-                                        }
-                                        .start()
+                            // Show and setup recipe URL
+                            binding.recipeUrl.apply {
+                                text = "View Recipe"
+                                visibility = View.VISIBLE
+                                setOnClickListener {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentItem.recipeUrl))
+                                    startActivity(intent)
                                 }
-                                .start()
+                            }
+                            
+                            // Shuffle the list after animation completes
+                            viewModel.shuffleCurrentList(currentIndex)
                         }
                         .start()
                 }

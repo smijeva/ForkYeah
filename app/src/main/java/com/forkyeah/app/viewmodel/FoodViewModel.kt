@@ -26,13 +26,13 @@ class FoodViewModel : ViewModel() {
             FoodItem(
                 id = "1",
                 name = "Margherita Pizza",
-                imageUrl = "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1664309641932-0e03e0771b97?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/240376/homemade-margherita-pizza/"
             ),
             FoodItem(
                 id = "2",
                 name = "Pad Thai",
-                imageUrl = "https://images.unsplash.com/photo-1617093727343-374698b1b08d?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1559314809-0d155014e29e?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/42968/pad-thai/"
             ),
             FoodItem(
@@ -50,7 +50,7 @@ class FoodViewModel : ViewModel() {
             FoodItem(
                 id = "5",
                 name = "Chicken Curry",
-                imageUrl = "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1708184528306-f75a0a5118ee?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/212721/indian-chicken-curry-murgh-kari/"
             ),
             FoodItem(
@@ -68,7 +68,7 @@ class FoodViewModel : ViewModel() {
             FoodItem(
                 id = "8",
                 name = "Fish and Chips",
-                imageUrl = "https://images.unsplash.com/photo-1626082927389-6cd4f1f3198b?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1697748836791-9ddf7e616ece?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/254710/beer-battered-fish-and-chips/"
             ),
             FoodItem(
@@ -86,13 +86,13 @@ class FoodViewModel : ViewModel() {
             FoodItem(
                 id = "11",
                 name = "Greek Salad",
-                imageUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1599021419847-d8a7a6aba5b4?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/214931/authentic-greek-salad/"
             ),
             FoodItem(
                 id = "12",
                 name = "Chicken Wings",
-                imageUrl = "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/24087/easy-baked-chicken-wings/"
             ),
             FoodItem(
@@ -104,7 +104,7 @@ class FoodViewModel : ViewModel() {
             FoodItem(
                 id = "14",
                 name = "Vegetable Stir Fry",
-                imageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop&q=60",
+                imageUrl = "https://images.unsplash.com/photo-1516901121982-4ba280115a36?w=800&auto=format&fit=crop&q=60",
                 recipeUrl = "https://www.allrecipes.com/recipe/24074/quick-and-easy-vegetable-stir-fry/"
             ),
             FoodItem(
