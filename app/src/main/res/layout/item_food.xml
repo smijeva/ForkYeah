@@ -27,14 +27,6 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/foodDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="16dp"
-            android:paddingBottom="16dp"
-            android:textSize="14sp" />
-
     </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView> 

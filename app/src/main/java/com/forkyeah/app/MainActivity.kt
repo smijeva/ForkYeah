@@ -24,6 +24,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.net.Uri
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -69,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                     if (Math.abs(diffX) > 100 && Math.abs(velocityX) > 100) {
                         if (diffX > 0) {
                             // Swipe right - like
-                            nextCard(true)
+                            onSwipeRight()
                             showTooltip("Liked! Click 'New Search' to find more")
                         } else {
                             // Swipe left - next
@@ -88,52 +89,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showFoodCard(index: Int) {
-        if (index in foodList.indices) {
-            val food = foodList[index]
-            binding.foodName.text = food.name
-            binding.foodDescription.text = food.description
-            
-            // Show recipe URL if the item is liked
-            if (isItemLiked) {
-                food.recipeUrl?.let { url ->
-                    binding.recipeUrl.apply {
-                        text = "Recipe: $url"
-                        visibility = View.VISIBLE
-                        setOnClickListener {
-                            // Open the recipe URL in a browser
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                            startActivity(intent)
-                        }
-                    }
-                }
-            } else {
-                binding.recipeUrl.visibility = View.GONE
-            }
-
-            Glide.with(this)
-                .load(food.imageUrl)
-                .centerCrop()
-                .into(binding.foodImage)
-        }
+    private fun showFoodCard(item: FoodItem) {
+        binding.foodName.text = item.name
+        binding.recipeUrl.visibility = View.GONE
+        
+        // Load image using Glide
+        Glide.with(this)
+            .load(item.imageUrl)
+            .transition(DrawableTransitionOptions.withCrossFade())
+            .into(binding.foodImage)
     }
 
     private fun setupNewSearchButton() {
         binding.newSearchButton.setOnClickListener {
-            viewModel.loadNewSearch()
-            isItemLiked = false
             binding.newSearchButton.visibility = View.GONE
-            binding.persistentHeart.alpha = 0f
-            binding.persistentHeart.visibility = View.GONE
-            binding.heartOverlay.visibility = View.GONE
             binding.recipeUrl.visibility = View.GONE
-            // Move to next item when starting new search
-            currentIndex++
-            if (currentIndex >= foodList.size) {
-                currentIndex = 0
-            }
-            showFoodCard(currentIndex)
-            showTooltip("Swipe right to like, left to skip")
+            binding.persistentHeart.alpha = 0f
+            viewModel.loadNewSearch()
         }
     }
 
@@ -153,9 +125,9 @@ class MainActivity : AppCompatActivity() {
             binding.heartOverlay.visibility = View.VISIBLE
 
             // Create scale animation
-            val scaleX = android.animation.ObjectAnimator.ofFloat(binding.heartOverlay, View.SCALE_X, 0.5f, 1.2f, 1f)
-            val scaleY = android.animation.ObjectAnimator.ofFloat(binding.heartOverlay, View.SCALE_Y, 0.5f, 1.2f, 1f)
-            val fadeIn = android.animation.ObjectAnimator.ofFloat(binding.heartOverlay, View.ALPHA, 0f, 1f)
+            val scaleX = ObjectAnimator.ofFloat(binding.heartOverlay, View.SCALE_X, 0.5f, 1.2f, 1f)
+            val scaleY = ObjectAnimator.ofFloat(binding.heartOverlay, View.SCALE_Y, 0.5f, 1.2f, 1f)
+            val fadeIn = ObjectAnimator.ofFloat(binding.heartOverlay, View.ALPHA, 0f, 1f)
             
             // Set animation durations
             scaleX.duration = 300
@@ -163,28 +135,28 @@ class MainActivity : AppCompatActivity() {
             fadeIn.duration = 200
 
             // Create fade out animation
-            val fadeOut = android.animation.ObjectAnimator.ofFloat(binding.heartOverlay, View.ALPHA, 1f, 0f)
+            val fadeOut = ObjectAnimator.ofFloat(binding.heartOverlay, View.ALPHA, 1f, 0f)
             fadeOut.duration = 200
             fadeOut.startDelay = 300
 
             // Start animations
-            android.animation.AnimatorSet().apply {
+            AnimatorSet().apply {
                 playTogether(scaleX, scaleY, fadeIn)
+                addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        fadeOut.start()
+                        binding.persistentHeart.alpha = 1f
+                        binding.persistentHeart.scaleX = 1f
+                        binding.persistentHeart.scaleY = 1f
+                        binding.persistentHeart.visibility = View.VISIBLE
+                        // Show new search button after liking
+                        binding.newSearchButton.visibility = View.VISIBLE
+                        // Shuffle the list after animation completes
+                        viewModel.shuffleCurrentList(currentIndex)
+                    }
+                })
                 start()
             }
-
-            // Show persistent heart after animation
-            fadeIn.addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) {
-                    fadeOut.start()
-                    binding.persistentHeart.alpha = 1f
-                    binding.persistentHeart.scaleX = 1f
-                    binding.persistentHeart.scaleY = 1f
-                    binding.persistentHeart.visibility = View.VISIBLE
-                    // Show new search button after liking
-                    binding.newSearchButton.visibility = View.VISIBLE
-                }
-            })
         }
     }
 
@@ -213,7 +185,7 @@ class MainActivity : AppCompatActivity() {
                 currentIndex = 0
             }
             Log.d("MainActivity", "Moving to next card at index $currentIndex")
-            showFoodCard(currentIndex)
+            showFoodCard(foodList[currentIndex])
             binding.persistentHeart.alpha = 0f
         }
     }
@@ -224,8 +196,75 @@ class MainActivity : AppCompatActivity() {
             foodList = foodItems
             if (foodItems.isNotEmpty()) {
                 currentIndex = 0
-                showFoodCard(currentIndex)
+                showFoodCard(foodList[currentIndex])
             }
+        }
+    }
+
+    private fun onSwipeRight() {
+        val currentIndex = viewModel.getCurrentIndex()
+        val currentItem = viewModel.getCurrentItem()
+        
+        if (currentItem != null) {
+            // Reset heart states
+            binding.heartOverlay.visibility = View.VISIBLE
+            binding.heartOverlay.alpha = 0f
+            binding.heartOverlay.scaleX = 0.5f
+            binding.heartOverlay.scaleY = 0.5f
+            
+            binding.persistentHeart.alpha = 0f
+            binding.persistentHeart.scaleX = 0.5f
+            binding.persistentHeart.scaleY = 0.5f
+
+            // Animate the overlay heart
+            binding.heartOverlay.animate()
+                .alpha(1f)
+                .scaleX(1.2f)
+                .scaleY(1.2f)
+                .setDuration(300)
+                .withEndAction {
+                    // Fade out the overlay heart
+                    binding.heartOverlay.animate()
+                        .alpha(0f)
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(300)
+                        .withEndAction {
+                            binding.heartOverlay.visibility = View.GONE
+                            
+                            // Show persistent heart with a bounce effect
+                            binding.persistentHeart.animate()
+                                .alpha(1f)
+                                .scaleX(1.2f)
+                                .scaleY(1.2f)
+                                .setDuration(200)
+                                .withEndAction {
+                                    binding.persistentHeart.animate()
+                                        .scaleX(1f)
+                                        .scaleY(1f)
+                                        .setDuration(100)
+                                        .withEndAction {
+                                            // Show recipe URL and new search button
+                                            binding.newSearchButton.visibility = View.VISIBLE
+                                            binding.recipeUrl.apply {
+                                                text = "View Recipe"
+                                                visibility = View.VISIBLE
+                                                setOnClickListener {
+                                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentItem.recipeUrl))
+                                                    startActivity(intent)
+                                                }
+                                            }
+                                            
+                                            // Shuffle the list after all animations complete
+                                            viewModel.shuffleCurrentList(currentIndex)
+                                        }
+                                        .start()
+                                }
+                                .start()
+                        }
+                        .start()
+                }
+                .start()
         }
     }
 } 

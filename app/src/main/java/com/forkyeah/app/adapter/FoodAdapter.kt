@@ -42,7 +42,6 @@ class FoodAdapter(
         fun bind(item: FoodItem) {
             binding.apply {
                 foodName.text = item.name
-                foodDescription.text = item.description
                 
                 Glide.with(foodImage)
                     .load(item.imageUrl)
